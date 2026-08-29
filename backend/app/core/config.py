@@ -10,8 +10,16 @@ class Settings(BaseSettings):
     # CORS Origins
     BACKEND_CORS_ORIGINS: list[str] = [
         "http://localhost:5173",
-        "http://localhost:3000"
+        "http://localhost:3000" 
     ]
+
+    # JWT Security
+    JWT_ACCESS_SECRET: str
+    JWT_REFRESH_SECRET: str
+    ALGORITHM: str = "HS256"
+
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # Environment configuration
     model_config = SettingsConfigDict(

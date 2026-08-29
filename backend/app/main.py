@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.v1.router import api_router
 
 # Initialize FastAPI APP
 app = FastAPI(
@@ -18,7 +19,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Root & Health Check Endpoints
+
+app.include_router(
+    api_router,
+    prefix=settings.API_V1_STR
+)
+
+# Root Endpoints
 @app.get("/", tags=["System"])
 async def read_root():
     return {
@@ -28,6 +35,7 @@ async def read_root():
         "version": settings.VERSION 
     }
 
+# Health Check Endpoints
 @app.get("/health", tags=["System"])
 async def health_check():
     return {
