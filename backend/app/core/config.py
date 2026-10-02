@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
+    # Database
+    DATABASE_URL: str = "sqlite+aiosqlite:///./talentpulse.db"
+
     # Environment configuration
     model_config = SettingsConfigDict(
         env_file=".env",

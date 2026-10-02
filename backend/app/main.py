@@ -38,6 +38,9 @@ async def read_root():
 # Health Check Endpoints
 @app.get("/health", tags=["System"])
 async def health_check():
+    """
+    Health check endpoint to verify backend service status.
+    """
     return {
         "status": "healthy",
         "service": settings.PROJECT_NAME,

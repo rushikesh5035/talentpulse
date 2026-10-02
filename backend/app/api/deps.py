@@ -56,6 +56,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserResponse:
 def require_role(*roles: str):
     """
     Factory that returns a dependency requiring one of the specified rules.
+    Usage: Depends(require_role("admin", "recruiter"))
     """
     async def role_checker(current_user: UserResponse = Depends(get_current_user)):
         if current_user.role not in roles:
