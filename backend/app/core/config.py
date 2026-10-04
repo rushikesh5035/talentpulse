@@ -4,7 +4,7 @@ class Settings(BaseSettings):
     # App metadata
     PROJECT_NAME: str = "TalentPulse AI"
     VERSION: str = "1.0.0"
-    DEBUG: bool = True
+    APP_DEBUG: bool = True
     API_V1_STR: str = "/api/v1"
 
     # CORS Origins

@@ -1,41 +1,35 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from app.schemas.auth import LoginRequest, TokenResponse, RefreshTokenRequest, UserResponse
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.ext.asyncio import AsyncSession
+import jwt
+
+from app.schemas.auth import TokenResponse, RefreshTokenRequest, UserResponse
 from app.core.security import (
     verify_password,
-    get_password_hash,
     create_access_token,
     create_refresh_token,
 )
-import jwt
 from app.core.config import settings
+from app.core.database import get_db
 from app.api.deps import get_current_user
-from fastapi.security import OAuth2PasswordRequestForm
+from app.services.user_service import get_user_by_email
 
 router = APIRouter()
 
-# Mock user database
-MOCK_USERS = {
-    "admin@talentpulse.com": {
-        "id": "1",
-        "name": "Admin User",
-        "role": "admin",
-        "permissions": ["create:job", "edit:job", "view:analytics", "configure:ai"],
-        # password: "admin123"
-        "hashed_password": get_password_hash("admin123"),
-    },
-    "recruiter@talentpulse.com": {
-        "id": "2",
-        "name": "Recruiter User",
-        "role": "recruiter",
-        "permissions": ["create:job", "edit:job", "view:candidates"],
-        # password: "recruiter123"
-        "hashed_password": get_password_hash("recruiter123"),
-    },
+# Permission mapping by role (until we build a proper permissions table)
+ROLE_PERMISSIONS = {
+    "admin" : ["create:job", "edit:job", "view:analytics", "configure:ai", "view:candidates"],
+    "recruiter": ["create:job", "edit:job", "view:candidates"],
+    "hiring_manager": ["view:candidates", "view:analytics"],
+    "candidate": [],
 }
 
 # ── POST /api/v1/auth/login
 @router.post("/login", response_model=TokenResponse)
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db)
+):
     """
     Authenticate a user and return access + refresh tokens.
     Accepts oauth2 form data (username=email, password)
@@ -44,31 +38,40 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     email = form_data.username     
     password = form_data.password
 
-    # check if user exists
-    user = MOCK_USERS.get(email)
+    # 1. Query database for the email
+    user = await get_user_by_email(db, email)
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
 
-    # verify password
-    if not verify_password(password, user["hashed_password"]):
+    # 2. verify password against hashed password
+    if not verify_password(password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
-    
-    # create tokens with extra claims (role, permissions)
+
+    # 3. check if account is active
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account inactive. Please contact support",
+        )
+
+    # 4. Create tokens
+    permissions = ROLE_PERMISSIONS.get(user.role, [])
     extra_claims = {
-        "role": user["role"],
-        "permissions": user["permissions"],
-        "name": user["name"],
+        "role": user.role,
+        "permissions": permissions,
+        "name": user.name,
     }
 
     # generate access and refresh token
-    access_token = create_access_token(subject=email, extra_claims=extra_claims)
-    refresh_token = create_refresh_token(subject=email)
+    access_token = create_access_token(subject=user.email, extra_claims=extra_claims)
+    refresh_token = create_refresh_token(subject=user.email)
 
     return TokenResponse(
         access_token=access_token,
@@ -77,7 +80,10 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 # ── POST /api/v1/auth/refresh 
 @router.post("/refresh", response_model=TokenResponse)
-async def refresh_token(request: RefreshTokenRequest):
+async def refresh_token(
+    request: RefreshTokenRequest,
+    db: AsyncSession = Depends(get_db)
+):
     """
     Issue a new access token using a valid refresh toekn
     """
@@ -97,18 +103,19 @@ async def refresh_token(request: RefreshTokenRequest):
             )
         
         email = payload.get('sub')
-        user = MOCK_USERS.get(email)
+        user = await get_user_by_email(db, email)
         
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found",
             )
-        
+
+        permissions = ROLE_PERMISSIONS.get(user.role, [])
         extra_claims = {
-            "role": user["role"],
-            "permissions": user["permissions"],
-            "name": user["name"]
+            "role": user.role,
+            "permissions": permissions,
+            "name": user.name
         }
 
         new_access_token = create_access_token(subject=email, extra_claims=extra_claims)
@@ -130,6 +137,7 @@ async def refresh_token(request: RefreshTokenRequest):
             detail="Invalid refresh token",
         )
 
+# ── GET /api/v1/auth/me 
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: UserResponse = Depends(get_current_user)):
     """

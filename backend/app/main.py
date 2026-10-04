@@ -44,5 +44,5 @@ async def health_check():
     return {
         "status": "healthy",
         "service": settings.PROJECT_NAME,
-        "debug_mode": settings.DEBUG
+        "debug_mode": settings.APP_DEBUG
     }

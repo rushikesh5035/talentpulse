@@ -5,7 +5,7 @@ from app.core.config import settings
 # Create async engine (the connection pool)
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=settings.DEBUG, # prints sql queries  in terminal for debug
+    echo=settings.APP_DEBUG, # prints sql queries  in terminal for debug
 )
 
 # Sessionn factory
