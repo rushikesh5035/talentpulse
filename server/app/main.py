@@ -7,6 +7,7 @@ settings = get_settings()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
+    description="AI-Powered Recruitment & Semantic Candidate Matching API",
     version=settings.VERSION,
 )
 
