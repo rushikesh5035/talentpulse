@@ -1,4 +1,4 @@
-from app.schemas.question import QuestionGenerateRequest
+from app.schemas.question import QuestionGenerateRequest, QuestionEvaluateRequest, QuestionEvaluation
 
 
 def _unique_skills(skills: list[str]) -> list[str]:
@@ -63,3 +63,37 @@ def generate_questions(request: QuestionGenerateRequest) -> list[str]:
 
     questions.extend(general_questions[: 6 - len(questions)])
     return questions
+
+
+def evaluate_answer(request: QuestionEvaluateRequest) -> QuestionEvaluation:
+    """Return transparent baseline feedback without an AI provider."""
+    words = request.answer.split()
+
+    if len(words) < 10:
+        return QuestionEvaluation(
+            score=3,
+            feedback="The answer is brief and does not provide much evidence.",
+            improvements=(
+                "Explain the situation, your specific actions, and the result. "
+                "Include a concrete example related to the question."
+            ),
+        )
+
+    if len(words) < 40:
+        return QuestionEvaluation(
+            score=6,
+            feedback="The answer includes some detail, but its evidence is limited.",
+            improvements=(
+                "Add a specific example, explain your contribution, "
+                "and describe the outcome."
+            ),
+        )
+
+    return QuestionEvaluation(
+        score=7,
+        feedback="The answer provides a reasonably detailed response.",
+        improvements=(
+            "Make sure the example directly addresses the question and clearly "
+            "separates your actions from the team's work."
+        ),
+    )
