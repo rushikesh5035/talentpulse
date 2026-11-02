@@ -11,6 +11,11 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     API_V1_PREFIX: str = "/api/v1"
 
+    # # JWT Security
+    JWT_SECRET_KEY: str = "development-only-change-me"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
     # Environment configuration
     model_config = SettingsConfigDict(
         env_file=".env",
