@@ -13,9 +13,7 @@ app = FastAPI(
 
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
+
 @app.get("/", tags=["Root"])
 async def root() -> dict[str, str]:
-    return {
-        "message": "Welcome to TalentPulse AI!",
-        "docs": "/docs"
-    }
+    return {"message": "Welcome to TalentPulse AI!", "docs": "/docs"}

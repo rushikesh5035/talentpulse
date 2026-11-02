@@ -1,12 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import (
-    health, 
-    jobs, 
-    candidates, 
-    questions, 
-    evaluations
-)
+from app.api.v1.endpoints import candidates, evaluations, health, jobs, questions
 
 api_router = APIRouter()
 

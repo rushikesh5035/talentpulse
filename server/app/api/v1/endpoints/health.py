@@ -5,6 +5,7 @@ from app.core.config import get_settings
 # creating an instance of APIRouter
 router = APIRouter(tags=["Health"])
 
+
 @router.get("/health")
 async def health_check() -> dict:
     """
@@ -12,7 +13,7 @@ async def health_check() -> dict:
     """
     settings = get_settings()
     return {
-        "status": "healthy", 
-        "message": "API is running smoothly.", 
+        "status": "healthy",
+        "message": "API is running smoothly.",
         "version": settings.VERSION,
     }

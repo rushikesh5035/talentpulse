@@ -1,9 +1,6 @@
 from fastapi import APIRouter
 
-from app.schemas.question import (
-    QuestionEvaluateRequest,
-    QuestionEvaluateResponse
-)
+from app.schemas.question import QuestionEvaluateRequest, QuestionEvaluateResponse
 from app.services.question_service import evaluate_answer
 
 router = APIRouter(prefix="/questions", tags=["Questions"])

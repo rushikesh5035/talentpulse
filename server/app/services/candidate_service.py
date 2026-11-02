@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from app.schemas.candidate import CandidateCreate, CandidateResponse
 
+
 class CandidateService:
     """Temporary process-local candidate store for development."""
 

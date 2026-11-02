@@ -1,4 +1,8 @@
-from app.schemas.question import QuestionGenerateRequest, QuestionEvaluateRequest, QuestionEvaluation
+from app.schemas.question import (
+    QuestionEvaluateRequest,
+    QuestionEvaluation,
+    QuestionGenerateRequest,
+)
 
 
 def _unique_skills(skills: list[str]) -> list[str]:
@@ -35,8 +39,7 @@ def generate_questions(request: QuestionGenerateRequest) -> list[str]:
 
     job_skill_keys = {skill.casefold() for skill in job_skills}
     overlap = [
-        skill for skill in candidate_skills 
-        if skill.casefold() in job_skill_keys
+        skill for skill in candidate_skills if skill.casefold() in job_skill_keys
     ]
 
     overlap_keys = {skill.casefold() for skill in overlap}

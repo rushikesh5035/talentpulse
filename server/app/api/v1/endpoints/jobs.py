@@ -7,6 +7,7 @@ from app.services.job_service import parse_job_description
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
+
 @router.post("/analyze", response_model=JobAnalysisResponse)
 async def analyze_job(request: JobAnalysisRequest) -> JobAnalysisResponse:
     parsed = parse_job_description(request.job_description)
